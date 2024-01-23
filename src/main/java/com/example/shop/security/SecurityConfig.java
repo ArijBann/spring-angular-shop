@@ -1,8 +1,11 @@
 package com.example.shop.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,13 +22,20 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private  CustomUserDetailService userDetailService;
+
+    @Autowired
+    public SecurityConfig(CustomUserDetailService customUserDetailService) {
+        this.userDetailService = customUserDetailService;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws  Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         (authorize) -> authorize
-                                .requestMatchers(HttpMethod.GET).permitAll()
+                                .requestMatchers(HttpMethod.GET).authenticated()
                                 .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults());
@@ -45,5 +55,12 @@ public class SecurityConfig {
                 .roles("USER")
                 .build();
     return new InMemoryUserDetailsManager(admin,user);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception{
+
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }
