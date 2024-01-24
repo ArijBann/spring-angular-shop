@@ -1,7 +1,7 @@
 package com.example.shop.security;
 
-import com.example.shop.model.Role;
-import com.example.shop.model.UserEntity;
+import com.example.shop.models.Role;
+import com.example.shop.models.UserEntity;
 import com.example.shop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
