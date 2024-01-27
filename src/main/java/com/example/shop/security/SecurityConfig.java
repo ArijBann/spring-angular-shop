@@ -10,12 +10,14 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -25,16 +27,21 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
 
     private  CustomUserDetailService userDetailService;
-
+    private AuthenticationEntryPoint authenticationEntryPoint;
     @Autowired
-    public SecurityConfig(CustomUserDetailService customUserDetailService) {
+    public SecurityConfig(CustomUserDetailService customUserDetailService,AuthenticationEntryPoint authenticationEntryPoint) {
         this.userDetailService = customUserDetailService;
+        this.authenticationEntryPoint=authenticationEntryPoint;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws  Exception{
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling((exception)-> exception
+                        .authenticationEntryPoint(authenticationEntryPoint))
+                .sessionManagement((session)->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
                         (authorize) -> authorize
                                 .requestMatchers("/api/auth/**").permitAll()
