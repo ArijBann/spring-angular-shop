@@ -12,39 +12,38 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+
 import java.io.IOException;
 
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
+
     @Autowired
-    private JwtGenerator jwtGenerator;
-@Autowired
-    private CustomUserDetailService customUserDetailService;
+    private JwtGenerator tokenGenerator;
+    @Autowired
+    private CustomUserDetailService customUserDetailsService;
 
 
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        //get the jwt from the request
-        String token = getJWTFromRequest(request);
-        //validate the token
-        if(StringUtils.hasText(token)&& jwtGenerator.validateToken(token)){
-            String username =jwtGenerator.getUserNameFromJWT(token);
-            UserDetails userDetails = customUserDetailService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails,
-                    userDetails.getAuthorities());
-            usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-
-        }
-        filterChain.doFilter(request,response);
-    }
 
     private String getJWTFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if(StringUtils.hasText(bearerToken)&& bearerToken.startsWith("Bearer")){
-            return bearerToken.substring(7,bearerToken.length());
+        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7, bearerToken.length());
         }
-        else return null ;
+        return null;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String token = getJWTFromRequest(request);
+        if(StringUtils.hasText(token) && tokenGenerator.validateToken(token)) {
+            String username = tokenGenerator.getUserNameFromJWT(token);
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+                    userDetails.getAuthorities());
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        }
+        filterChain.doFilter(request, response);
     }
 }
