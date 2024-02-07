@@ -1,6 +1,6 @@
 package com.example.shop.controllers;
 
-import com.example.shop.ProductService;
+import com.example.shop.service.ProductService;
 import com.example.shop.models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/product")
 public class ProductController {
 @Autowired
     ProductService productService;
@@ -18,18 +19,18 @@ public Product addProduct (@RequestBody Product product){
 }
 
 @PostMapping("/addProducts")
-public List<Product> addProducts(@RequestBody List<Product> products){
-    return productService.getProducts();
+public void addProducts(@RequestBody List<Product> products){
+    productService.saveProducts(products);
 }
 
-@GetMapping("/product/{id}")
+@GetMapping("/productById/{id}")
     public Product getProductById(@PathVariable int id){
         return productService.getPoductById(id);
     }
 
-@GetMapping("/product/{name}")
+@GetMapping("/productByName/{name}")
     public Product getProductByName(@PathVariable String name){
-        return productService.getPoductById(Integer.parseInt(name));
+        return productService.getProductByName(name);
     }
 
 @GetMapping("/products")
@@ -37,7 +38,7 @@ public List<Product> addProducts(@RequestBody List<Product> products){
     return productService.getProducts();
 }
 
-@PostMapping("/update")
+@PutMapping("/update")
     public Product updateProduct (@RequestBody Product product){
         return productService.updateProduct(product);
     }

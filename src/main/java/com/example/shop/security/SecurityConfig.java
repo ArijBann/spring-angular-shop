@@ -120,7 +120,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
                         (authorize) -> authorize
-                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/auth/**","/api/product/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
